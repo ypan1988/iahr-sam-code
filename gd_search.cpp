@@ -122,7 +122,7 @@ double ChooseSwap(arma::uvec idx_in, arma::mat A, arma::mat sig, arma::vec u,
 
   // find one index from idx_out to add (swap)
   // which results in largest val of add_one()
-  arma::uword idx_swap = 0;
+  arma::uword idx_swap = idx_out(0);
   maxval = add_one(rm1A, sig(idx_out(0), idx_out(0)),
                    sig.submat(idx_in, arma::uvec({idx_out(0)})),
                    u.elem(arma::join_cols(idx_in, arma::uvec({idx_out(0)}))));

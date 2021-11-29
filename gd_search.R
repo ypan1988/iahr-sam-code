@@ -1,7 +1,6 @@
 require(Rcpp)
 require(RcppArmadillo)
 
-setwd("C:/Users/pany/Documents/Projects/iahr-sam-code")
 sourceCpp("rem_add_funcs.cpp")
 
 # R versions of functions
