@@ -144,9 +144,9 @@ gen_stmat_non_linear <- function(n_dim = 20,
   #X <- matrix(c(rep(1,n_dim^2),ifelse(sqrt(pos$x^2 + pos$y^2)<0.5,1,0)),ncol=2)
   
   d <- sqrt(pos$x ^ 2 + pos$y ^ 2)
-  beta0 = theta[0]
-  beta1 = theta[1]
-  beta2 = theta[2]
+  beta0 = theta[1]
+  beta1 = theta[2]
+  beta2 = theta[3]
   X <-
     matrix(c(rep(1, n_dim ^ 2), exp(-d * beta2), -d * beta1 * exp(-d * beta2)),
            ncol = 3)
@@ -159,7 +159,7 @@ gen_stmat_non_linear <- function(n_dim = 20,
   
   # A <- solve(sig[start_idx,start_idx])
   # val <- matrix(u[start_idx],nrow=1)%*%A%*%matrix(u[start_idx],ncol=1)
-  return(list(sig, u, pos, X))
+  return(list(sig, u, pos, X, beta1 * exp(-d * beta2)))
 }
 
 ## GENERATING EXAMPLES
