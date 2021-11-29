@@ -153,7 +153,7 @@ gen_model_string <- function(f1,v1){
       }
     }
     if(f1[[idx]] %in% c("Algebraic")){
-      
+      str1 <- ""
       for(j in 1:length(v1[[idx]])){
         #count <- count +1
         str1 <- paste0(str1,"theta[[",i+1,"]][",count,"]*",v1[idx][j],"^theta[[",i+1,"]][",count+1,"]")
