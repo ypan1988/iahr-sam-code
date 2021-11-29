@@ -1,13 +1,23 @@
 ####################################################################################
 # TEST EXAMPLES ####################################################################
 ####################################################################################
+require(Matrix)
+require(ggplot2)
+require(Rcpp)
+require(RcppArmadillo)
 
-n_dim <- 10
+setwd("C:/Users/pany/Documents/Projects/iahr-sam-code")
+sourceCpp("gd_search.cpp")
+source("gd_search.R")
+source("create_data.R")
+
+
+n_dim <- 20
 xpos <- seq(-1,1,length.out = 2*n_dim+1)
 xpos <- xpos[(1:n_dim)*2]
 pos <- expand.grid(x=xpos,y=xpos)
 
-data <- data.frame(x=sqrt(pos$x^2 + pos$y^2),y=rnorm(100),z=runif(100))
+data <- data.frame(x=sqrt(pos$x^2 + pos$y^2),y=rnorm(n_dim^2),z=runif(n_dim^2))
 
 Sout <- gen_re_mat(pos,
                    dims = list(c(1,2)),
@@ -29,11 +39,26 @@ dat <- create_data(~Exp(x)+Linear(y,z),
 
 
 #starting vector
-d <- sample(c(rep(1,20),rep(0,100)),420)
+d <- sample(c(rep(1,20),rep(0,n_dim^2-20)),n_dim^2)
 idx_in <- which(d==1)
-sig <- dat[[1]]
-u <- dat[[2]]
+sig <- dat[[2]]
+u <- dat[[1]]
 A <- solve(sig[idx_in,idx_in])
 
 d <- grad(idx_in,A,sig,u,tol=1e-10,T)
 d2 <- Grad(idx_in-1,A,sig,u,tol=1e-10,T)
+
+
+pos$isin <- 0
+pos[d2+1,'isin'] <- 1
+pos$int <- data$x
+
+
+ggplot(data=pos,aes(x=x,y=y,fill=int))+
+  geom_tile(alpha=0.8)+
+  geom_point(data=pos[pos$isin==1,],aes(x=x,y=y))+
+  theme_bw()+
+  theme(panel.grid = element_blank(),
+        axis.text.y = element_blank())+
+  scale_fill_viridis_c(name="Intervention area")+
+  labs(x="x",y="y")
