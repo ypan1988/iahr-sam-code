@@ -19,6 +19,44 @@ choose_swap <- function(idx_in,A,sig,u){
   return(list(val,idx_in,newA))
 }
 
+choose_swap_robust <- function(idx_in,A_list,sig_list,u_list,weights){
+  idx_out <- 1:nrow(sig)
+  idx_out <- idx_out[!idx_out%in%idx_in]
+  val_out_mat <- matrix(NA,nrow=length(idx_in)-1,ncol=length(A_list))
+  val_in_mat <- matrix(NA,nrow=length(idx_in)-1,ncol=length(A_list))
+  
+  for(idx in 1:length(A_list)){
+    val_out_mat[,idx] <- sapply(1:length(idx_in),function(i)
+      remove_one(A_list[[idx]],i-1,u_list[[idx]][idx_in]))
+  }
+  val_out <- as.numeric(val_out_mat %*% weights)
+  
+  rm1A <- list()
+  for(idx in 1:length(A_list)){
+    rm1A[[idx]] <- remove_one_mat(A_list[[idx]],which.max(val_out)-1)
+  }
+  
+  idx_in <- idx_in[-which.max(val_out)]
+  
+  for(idx in 1:length(A_list)){
+    val_in_mat[,idx] <- sapply(idx_out,function(i)add_one(rm1A[[idx]],
+                                                          sig_list[[idx]][i,i],
+                                                          sig_list[[idx]][idx_in,i],
+                                                          u_list[[idx]][c(idx_in,i)]))
+  }
+  val_in <- as.numeric(val_in_mat %*% weights)
+  swap_idx <- idx_out[which.max(val_in)]
+  newA <- list()
+  
+  for(idx in 1:length(A_list)){
+    newA[[idx]] <- add_one_mat(rm1A[[idx]],sig_list[[idx]][swap_idx,swap_idx],
+                               sig_list[[idx]][idx_in,swap_idx])
+  }
+  idx_in <- c(idx_in,swap_idx)
+  val <- val_in[which.max(val_in)]
+  return(list(val,idx_in,newA))
+}
+
 grad <- function(idx_in,A,sig,u,tol=1e-9, trace = TRUE){
   new_val <- obj_fun(A,u[idx_in])
   diff <- 1
