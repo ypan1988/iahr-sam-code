@@ -23,7 +23,7 @@ choose_swap_robust <- function(idx_in,A_list,sig_list,u_list,weights){
   idx_out <- 1:nrow(sig)
   idx_out <- idx_out[!idx_out%in%idx_in]
   val_out_mat <- matrix(NA,nrow=length(idx_in)-1,ncol=length(A_list))
-  val_in_mat <- matrix(NA,nrow=length(idx_in)-1,ncol=length(A_list))
+  val_in_mat <- matrix(NA,nrow=length(idx_in),ncol=length(A_list))
   
   for(idx in 1:length(A_list)){
     val_out_mat[,idx] <- sapply(1:length(idx_in),function(i)
