@@ -121,7 +121,7 @@ obj_fun_val <- function(d){
 dat <- gen_stmat_non_linear(cov_pars = c(0.5,1),theta = c(1,0.5,3))
 
 #starting vector
-d <- sample(c(rep(1,40),rep(0,360)),400)
+d <- sample(c(rep(1,100),rep(0,300)),400)
 idx_in <- which(d==1)
 sig <- dat[[1]]
 s1 <- solve(sig)
@@ -161,3 +161,19 @@ ggplot(data=pos,aes(x=x,y=y,fill=int))+
         axis.text.y = element_blank())+
   scale_fill_viridis_c(name="Intervention area")+
   labs(x="x",y="y")
+
+
+########################################
+##### Example for the robust       #####
+########################################
+
+num_dat <- 5
+wts <- rep(1/num_dat, num_dat)
+dat <- lapply(1:num_dat, function(i) gen_stmat_non_linear(cov_pars = c(0.5,1),theta = c(1,0.5,3)))
+d <- sample(c(rep(1,100),rep(0,300)),400)
+idx_in <- which(d==1)
+sig_list <- lapply(1:num_dat, function(i) dat[[i]][[1]])
+u_list <- lapply(1:num_dat, function(i) dat[[i]][[2]])
+A_list <- lapply(1:num_dat, function(i) solve(sig_list[[i]][idx_in,idx_in]))
+
+d = grad_robust(idx_in,A_list, sig_list,u_list,wts,tol=1e-20,T)
