@@ -1,14 +1,14 @@
 ### function to generate cov and X mats based on model formula
 
 create_data <- function(formula,
-            family,
-            data,
-            theta,
-            Z,
-            D,
-            C,
-            var_par=NULL,
-            verbose=TRUE){
+                        family,
+                        data,
+                        theta,
+                        Z,
+                        D,
+                        C,
+                        var_par=NULL,
+                        verbose=TRUE){
   
   # parse the formula
   if(length(formula)==3)stop("formula should not have dependent variable.")
@@ -41,7 +41,7 @@ create_data <- function(formula,
     f1[[1]] <- c(as.character(mf1[[1]]))
     v1[[1]] <- all.vars(mf1)
   }
-
+  
   mod <- gen_model_string(f1,v1)
   if(verbose)cat("MEAN FUNCTION:\n")
   if(verbose)print(mod[[1]])
@@ -104,7 +104,7 @@ create_data <- function(formula,
       m0 <- m0 + 1/(1+m1)
     }
     
-   
+    
   }
   
   S <- gen_cov_mat(m0,
@@ -113,11 +113,7 @@ create_data <- function(formula,
                    family=family,
                    var_par = var_par)
   
-  M <- t(X) %*% solve(S) %*% X
-  cM <- t(C) %*% solve(M)
-  u <- cM %*% t(X)
-  
-  return(list(u,S))
+  return(list(C,X,S))
   
 }
 
