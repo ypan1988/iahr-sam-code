@@ -107,12 +107,11 @@ double ChooseSwap(arma::uvec idx_in, arma::mat A, arma::mat sig, arma::vec u,
   // find one index from idx_in to remove
   // which results in largest val of remove_one()
   arma::vec u_idx_in = u.elem(idx_in);
-  int idx_rm = 0;
-  double maxval = remove_one(A, 0, u_idx_in);
-  for (std::size_t i = 1; i < idx_in.n_elem; ++i) {
-    double val = remove_one(A, i, u_idx_in);
-    if (val > maxval) idx_rm = i, maxval = val;
+  arma::vec val_out_vec(idx_in.n_elem, arma::fill::zeros);
+  for (std::size_t i = 0; i < idx_in.n_elem; ++i) {
+    val_out_vec(i) = remove_one(A, i, u_idx_in);
   }
+  int idx_rm = val_out_vec.index_max();
 
   // compute the new A without the index of idx_rm
   arma::mat rm1A = remove_one_mat(A, idx_rm);
@@ -122,18 +121,14 @@ double ChooseSwap(arma::uvec idx_in, arma::mat A, arma::mat sig, arma::vec u,
 
   // find one index from idx_out to add (swap)
   // which results in largest val of add_one()
-  arma::uword idx_swap = idx_out(0);
-  maxval = add_one(rm1A, sig(idx_out(0), idx_out(0)),
-                   sig.submat(idx_in, arma::uvec({idx_out(0)})),
-                   u.elem(arma::join_cols(idx_in, arma::uvec({idx_out(0)}))));
-
-  for (arma::uword i = 1; i < idx_out.n_elem; ++i) {
+  arma::vec val_in_vec(idx_out.n_elem, arma::fill::zeros);
+  for (arma::uword i = 0; i < idx_out.n_elem; ++i) {
     arma::uword ii = idx_out(i);
-    double val =
-        add_one(rm1A, sig(ii, ii), sig.submat(idx_in, arma::uvec({ii})),
-                u.elem(arma::join_cols(idx_in, arma::uvec({ii}))));
-    if (val > maxval) idx_swap = ii, maxval = val;
+    val_in_vec(i) =
+          add_one(rm1A, sig(ii, ii), sig.submat(idx_in, arma::uvec({ii})),
+                  u.elem(arma::join_cols(idx_in, arma::uvec({ii}))));
   }
+  arma::uword idx_swap = idx_out(val_in_vec.index_max());
 
   // compute the new A with the index of idx_swap
   arma::mat newA = add_one_mat(rm1A, sig(idx_swap, idx_swap),
