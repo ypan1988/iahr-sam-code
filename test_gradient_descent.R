@@ -176,4 +176,30 @@ sig_list <- lapply(1:num_dat, function(i) dat[[i]][[1]])
 u_list <- lapply(1:num_dat, function(i) dat[[i]][[2]])
 A_list <- lapply(1:num_dat, function(i) solve(sig_list[[i]][idx_in,idx_in]))
 
-d = grad_robust(idx_in,A_list, sig_list,u_list,wts,tol=1e-20,T)
+grad_robust_old <- function(idx_in,A_list,sig_list,u_list,weights,tol=1e-9, trace = TRUE){
+  new_val_vec <- sapply(1:length(A_list),function(i)obj_fun(A_list[[i]], u_list[[i]][idx_in]))
+  new_val <- as.numeric(new_val_vec %*% weights)
+  diff <- 1
+  i <- 0
+  while(diff > tol){
+    val <- new_val
+    i <- i + 1
+    out <- choose_swap_robust(idx_in,A_list,sig_list,u_list, weights)
+    new_val <- out[[1]]
+    diff <- new_val - val
+    if(diff>0){
+      A_list <- out[[3]]
+      idx_in <- out[[2]]
+    }
+    if (trace) {
+      cat("\nIter: ",i)
+      cat(" ",diff)
+    }
+  }
+  return(idx_in)
+}
+
+system.time(grad_robust_old(idx_in,A_list, sig_list,u_list,wts,tol=1e-20,T))
+system.time(GradRobust(num_dat, idx_in-1,do.call(rbind, A_list),
+                       do.call(rbind, sig_list),do.call(cbind,u_list),wts,tol=1e-20,T)
+)
