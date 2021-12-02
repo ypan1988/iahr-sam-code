@@ -80,25 +80,39 @@ grad <- function(idx_in,A,sig,u,tol=1e-9, trace = TRUE){
   return(idx_in)
 }
 
-grad_robust <- function(idx_in,A_list,sig_list,u_list,weights,tol=1e-9, trace = TRUE){
-  new_val_vec <- sapply(1:length(A_list),function(i)obj_fun(A_list[[i]], u_list[[i]][idx_in]))
-  new_val <- as.numeric(new_val_vec %*% weights)
+grad_robust <- function(idx_in,
+                        A_list,
+                        sig_list,
+                        u_list,
+                        w=NULL,
+                        tol=1e-9, 
+                        trace = TRUE){
+  
+  if(is.null(w))w <- rep(1/length(A_list),length(A_list))
+  if(sum(w)!=1)w <- w/sum(w)
+  if(!is(w,"matrix"))w <- matrix(w,ncol=1)
+  
+
+  new_val_vec <- matrix(sapply(1:length(A_list),function(i)obj_fun(A_list[[i]], u_list[[i]][idx_in])),nrow=1)
+  
+  new_val <- as.numeric(new_val_vec %*% w)
   diff <- 1
   i <- 0
   while(diff > tol){
     val <- new_val
     i <- i + 1
-    out <- choose_swap_robust(idx_in,A_list,sig_list,u_list, weights)
+    out <- choose_swap_robust(idx_in,A_list,sig_list,u_list, w)
     new_val <- out[[1]]
+    if (trace) {
+      cat("\nIter: ",i)
+      cat(" ",diff)
+    }
     diff <- new_val - val
     if(diff>0){
       A_list <- out[[3]]
       idx_in <- out[[2]]
     }
-    if (trace) {
-      cat("\nIter: ",i)
-      cat(" ",diff)
-    }
+    
   }
   return(idx_in)
 }

@@ -21,22 +21,27 @@ create_data <- function(formula,
   # extract list of functions and list of variables for each function
   f1 <- list()
   v1 <- list()
-  sym <- "+"
-  iter <- 0
-  while(sym == "+"){
-    iter <- iter+1
-    sym <- as.character(mf1[[c(rep(2,iter-1),1)]])
-    
-    if(sym == "+"){
-      idx <- c(rep(2,iter-1),3,1)
-    } else {
-      idx <- c(rep(2,iter-1),1)
+  if(mf1[[1]]=="+"){
+    sym <- "+"
+    iter <- 0
+    while(sym == "+"){
+      iter <- iter+1
+      sym <- as.character(mf1[[c(rep(2,iter-1),1)]])
+      
+      if(sym == "+"){
+        idx <- c(rep(2,iter-1),3,1)
+      } else {
+        idx <- c(rep(2,iter-1),1)
+      }
+      
+      f1[[iter]] <- as.character(mf1[[idx]])
+      v1[[iter]] <- all.vars(mf1[[idx[1:(length(idx)-1)]]])
     }
-    
-    f1[[iter]] <- as.character(mf1[[idx]])
-    v1[[iter]] <- all.vars(mf1[[idx[1:(length(idx)-1)]]])
+  } else {
+    f1[[1]] <- c(as.character(mf1[[1]]))
+    v1[[1]] <- all.vars(mf1)
   }
-  
+
   mod <- gen_model_string(f1,v1)
   if(verbose)cat("MEAN FUNCTION:\n")
   if(verbose)print(mod[[1]])
