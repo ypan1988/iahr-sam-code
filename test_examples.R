@@ -24,12 +24,12 @@ gen_tmat <- function(n_obs,
   X <-
     matrix(c(rep(1, n_obs), I(tpos > 0 & tpos < 0.5) * 1), ncol = 2)
   #X <- cbind(diag(n_obs),matrix(I(tpos>0)*1,ncol=1))
-  
+
   C <- matrix(c(rep(0, ncol(X) - 1), 1), ncol = 1)
   M <- t(X) %*% solve(sig) %*% X
   cM <- t(C) %*% solve(M)
   u <- cM %*% t(X)
-  
+
   # A <- solve(sig[start_idx,start_idx])
   # val <- matrix(u[start_idx],nrow=1)%*%A%*%matrix(u[start_idx],ncol=1)
   return(list(sig, u, cbind(X, tpos)))
@@ -72,16 +72,16 @@ gen_clmat <- function(x_pars = c(6, 7, 10),
   X <- X[rep(1:nrow(X), each = x_pars[3]),]
   sig <-
     cov_mat_i(x_pars[3], cov_pars[1], cov_pars[2], x_pars[1], x_pars[2])
-  
+
   C <- matrix(c(rep(0, ncol(X) - 1), 1), ncol = 1)
   M <- t(X) %*% solve(sig) %*% X
   cM <- t(C) %*% solve(M)
   u <- cM %*% t(X)
-  
+
   A <- solve(sig[start_idx, start_idx])
   val <-
     matrix(u[start_idx], nrow = 1) %*% A %*% matrix(u[start_idx], ncol = 1)
-  
+
   return(list(sig, u, A, val))
 }
 
@@ -92,7 +92,7 @@ gen_stmat <- function(n_dim,
   #ndim is the size in one dimension, so total obs is n_dim^2
   xpos <- seq(-1, 1, length.out = 2 * n_dim + 1)
   xpos <- xpos[(1:n_dim) * 2]
-  
+
   pos <- expand.grid(x = xpos, y = xpos)
   sig <- matrix(NA, nrow = nrow(pos), ncol = nrow(pos))
   cat("\nBuilding covariance matrix:\n")
@@ -109,12 +109,12 @@ gen_stmat <- function(n_dim,
   X <-
     matrix(c(rep(1, n_dim ^ 2), sqrt(pos$x ^ 2 + pos$y ^ 2)), ncol =
              2)
-  
+
   C <- matrix(c(rep(0, ncol(X) - 1), 1), ncol = 1)
   M <- t(X) %*% solve(sig) %*% X
   cM <- t(C) %*% solve(M)
   u <- cM %*% t(X)
-  
+
   # A <- solve(sig[start_idx,start_idx])
   # val <- matrix(u[start_idx],nrow=1)%*%A%*%matrix(u[start_idx],ncol=1)
   return(list(sig, u, pos, X))
@@ -128,7 +128,7 @@ gen_stmat_non_linear <- function(n_dim = 20,
   #ndim is the size in one dimension, so total obs is n_dim^2
   xpos <- seq(-1, 1, length.out = 2 * n_dim + 1)
   xpos <- xpos[(1:n_dim) * 2]
-  
+
   pos <- expand.grid(x = xpos, y = xpos)
   sig <- matrix(NA, nrow = nrow(pos), ncol = nrow(pos))
   cat("\nBuilding covariance matrix:\n")
@@ -142,7 +142,7 @@ gen_stmat_non_linear <- function(n_dim = 20,
   }
   diag(sig) <- cov_pars[1]
   #X <- matrix(c(rep(1,n_dim^2),ifelse(sqrt(pos$x^2 + pos$y^2)<0.5,1,0)),ncol=2)
-  
+
   d <- sqrt(pos$x ^ 2 + pos$y ^ 2)
   beta0 = theta[1]
   beta1 = theta[2]
@@ -150,16 +150,16 @@ gen_stmat_non_linear <- function(n_dim = 20,
   X <-
     matrix(c(rep(1, n_dim ^ 2), exp(-d * beta2), -d * beta1 * exp(-d * beta2)),
            ncol = 3)
-  
+
   #C <- matrix(c(rep(0,ncol(X)-1),1),ncol=1)
   C <- c(0, 1, 1)
   M <- t(X) %*% solve(sig) %*% X
   cM <- t(C) %*% solve(M)
   u <- cM %*% t(X)
-  
+
   # A <- solve(sig[start_idx,start_idx])
   # val <- matrix(u[start_idx],nrow=1)%*%A%*%matrix(u[start_idx],ncol=1)
-  return(list(sig, u, pos, X, beta1 * exp(-d * beta2)))
+  return(list(sig, u, pos, X, beta1 * exp(-d * beta2), matrix(C,ncol = 1)))
 }
 
 ## GENERATING EXAMPLES

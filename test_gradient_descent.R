@@ -175,6 +175,8 @@ idx_in <- which(d==1)
 sig_list <- lapply(1:num_dat, function(i) dat[[i]][[1]])
 u_list <- lapply(1:num_dat, function(i) dat[[i]][[2]])
 A_list <- lapply(1:num_dat, function(i) solve(sig_list[[i]][idx_in,idx_in]))
+X_list <- lapply(1:num_dat, function(i) dat[[i]][[4]])
+C_list <- lapply(1:num_dat, function(i) dat[[i]][[6]])
 
 grad_robust_old <- function(idx_in,A_list,sig_list,u_list,weights,tol=1e-9, trace = TRUE){
   new_val_vec <- sapply(1:length(A_list),function(i)obj_fun(A_list[[i]], u_list[[i]][idx_in]))
@@ -203,3 +205,8 @@ system.time(grad_robust_old(idx_in,A_list, sig_list,u_list,wts,tol=1e-20,T))
 system.time(GradRobust(num_dat, idx_in-1,do.call(rbind, A_list),
                        do.call(rbind, sig_list),do.call(cbind,u_list),wts,tol=1e-20,T)
 )
+
+d = grad_robust(idx_in,C_list,X_list,sig_list,wts,tol=1e-20,T)
+d2= grad_robust2(idx_in,C_list,X_list,sig_list,wts,tol=1e-20,T)
+
+sum(d == d2)

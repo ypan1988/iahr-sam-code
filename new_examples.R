@@ -55,6 +55,13 @@ d2 <- grad_robust(idx_in,
                   sig_list = list(dat1[[3]]),
                   tol=1e-10,
                   trace=T)
+d3 <- grad_robust2(idx_in,
+                  C=list(dat1[[1]]),
+                  X_list=list(dat1[[2]]),
+                  sig_list = list(dat1[[3]]),
+                  tol=1e-10,
+                  trace=T)
+
 
 
 pos$isin <- 0
@@ -155,12 +162,12 @@ ggpubr::ggarrange(p_exp,p_linear,p_robust)
 #starting vector
 # d <- sample(c(rep(1,100),rep(0,n_dim^2-100)),n_dim^2)
 # idx_in <- which(d==1)
-# 
+#
 # n_dim <- 20
 # xpos <- seq(-1,1,length.out = 2*n_dim+1)
 # xpos <- xpos[(1:n_dim)*2]
 # pos <- expand.grid(x=xpos,y=xpos)
-# 
+#
 # data <- data.frame(x=-sqrt(pos$x^2 + pos$y^2),y=rnorm(n_dim^2),z=runif(n_dim^2))
 
 # Sout <- gen_re_mat(pos,
