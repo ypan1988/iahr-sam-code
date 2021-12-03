@@ -12,7 +12,8 @@ create_data <- function(formula,
   
   # parse the formula
   if(length(formula)==3)stop("formula should not have dependent variable.")
-  if(!all(all.vars(formula)%in%colnames(data)))stop("Not all variables named in data")
+  if(!all(all.vars(formula)%in%colnames(data)))stop(paste0("Not all variables named in data :",
+                                                           paste0(all.vars(formula)[!all.vars(formula)%in%colnames(data)],collapse=" ")))
   mf1 <- formula[[2]]
   
   f <- as.formula(formula)
@@ -59,6 +60,9 @@ create_data <- function(formula,
   #cycle through the functions and add them in order and add them in columns
   for(i in 1:length(f1)){
     idx <- (length(f1)-i+1)
+    
+    if(is(theta[[i+1]],"list"))theta[[i+1]] <- unlist(theta[[i+1]])
+    
     if(f1[[idx]] %in% c("Exp","Log")){
       m1 <- rep(0,nrow(data))
       for(j in 1:length(v1[[idx]])){
@@ -84,7 +88,7 @@ create_data <- function(formula,
     if(f1[[idx]] %in% c("Linear")){
       m1 <- rep(0,nrow(data))
       for(j in 1:length(v1[[idx]])){
-        m1 <- m1 + theta[[i+1]][[j]] * data[,v1[[idx]][j]]
+        m1 <- m1 + theta[[i+1]][[j]] * data[,v1[[idx]][[j]]]
       }
       for(j in 1:length(v1[[idx]])){
         X <- cbind(X,matrix(data[,v1[[idx]][j]],ncol=1))
@@ -288,10 +292,13 @@ gen_re_mat <- function(df,
 }
 
 exponential <- function(x, pars){
-  pars[1]*exp(-x*pars[2])
+  pars[1]*exp(-x/pars[2])
 }
 
 indicator <- function(x, pars){
   pars[1]*I(x==0)
 }
 
+exp_power <- function(x,pars){
+  pars[1]^(x)
+}
