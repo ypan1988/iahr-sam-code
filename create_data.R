@@ -46,7 +46,7 @@ create_data <- function(formula,
   mod <- gen_model_string(f1,v1)
   if(verbose)cat("MEAN FUNCTION:\n")
   if(verbose)print(mod[[1]])
-  if(length(theta)!=(length(f1)+1))stop("Length theta not equal to number of lists of parameters")
+  if(length(theta)!=(length(f1)))stop("Length theta not equal to number of lists of parameters")
   
   
   #check functions are in our 
@@ -55,40 +55,40 @@ create_data <- function(formula,
   
   #build the matrix!
   X <- matrix(1,nrow=nrow(data),ncol=1)
-  m0 <- rep(theta[[1]][[1]],nrow(data))
+  m0 <- rep(0,nrow(data))
   
   #cycle through the functions and add them in order and add them in columns
   for(i in 1:length(f1)){
     idx <- (length(f1)-i+1)
     
-    if(is(theta[[i+1]],"list"))theta[[i+1]] <- unlist(theta[[i+1]])
+    if(is(theta[[i]],"list"))theta[[i]] <- unlist(theta[[i]])
     
     if(f1[[idx]] %in% c("Exp","Log")){
       m1 <- rep(0,nrow(data))
       for(j in 1:length(v1[[idx]])){
-        m1 <- m1 + theta[[i+1]][[j+1]] * data[,v1[[idx]][j]]
+        m1 <- m1 + theta[[i]][[j+1]] * data[,v1[[idx]][j]]
       }
       if(f1[[idx]] == "Exp"){
         X <- cbind(X,matrix(exp(m1),ncol=1))
         for(j in 1:length(v1[[idx]])){
-          X <- cbind(X,matrix(theta[[i+1]][[1]]*data[,v1[[idx]][j]]*exp(m1),ncol=1))
+          X <- cbind(X,matrix(theta[[i]][[1]]*data[,v1[[idx]][j]]*exp(m1),ncol=1))
         }
         
-        m0 <- m0 + theta[[i+1]][[1]]*exp(m1)
+        m0 <- m0 + theta[[i]][[1]]*exp(m1)
       }
       if(f1[[idx]] == "Log"){
         X <- cbind(X,matrix(log(m1),ncol=1))
         for(j in 1:length(v1[[idx]])){
-          X <- cbind(X,matrix(theta[[i+1]][[j+1]]*data[,v1[[idx]][j]]/m1,ncol=1))
+          X <- cbind(X,matrix(theta[[i]][[j+1]]*data[,v1[[idx]][j]]/m1,ncol=1))
         }
-        m0 <- m0 + theta[[i+1]][[1]]*log(m1)
+        m0 <- m0 + theta[[i]][[1]]*log(m1)
       }
     }
     
     if(f1[[idx]] %in% c("Linear")){
       m1 <- rep(0,nrow(data))
       for(j in 1:length(v1[[idx]])){
-        m1 <- m1 + theta[[i+1]][[j]] * data[,v1[[idx]][[j]]]
+        m1 <- m1 + theta[[i]][[j]] * data[,v1[[idx]][[j]]]
       }
       for(j in 1:length(v1[[idx]])){
         X <- cbind(X,matrix(data[,v1[[idx]][j]],ncol=1))
@@ -99,17 +99,19 @@ create_data <- function(formula,
     if(f1[[idx]] %in% c("Algebraic")){
       m1 <- rep(0,nrow(data))
       for(j in 1:length(v1[[idx]])){
-        m1 <- m1 + theta[[i+1]][[(j*2 - 1)]] * data[,v1[[idx]][j]] ^ theta[[i+1]][[(j*2)]]
+        m1 <- m1 + theta[[i]][[(j*2 - 1)]] * data[,v1[[idx]][j]] ^ theta[[i]][[(j*2)]]
       }
       for(j in 1:length(v1[[idx]])){
-        X <- cbind(X,matrix(-(data[,v1[[idx]][j]]^theta[[i+1]][[(j*2)]])/(m1^2),ncol=1))
-        X <- cbind(X,matrix(-(theta[[i+1]][[(j*2 - 1)]]*data[,v1[[idx]][j]]^theta[[i+1]][[(j*2)]] * log(data[,v1[[idx]][j]]))/(m1^2),ncol=1))
+        X <- cbind(X,matrix(-(data[,v1[[idx]][j]]^theta[[i]][[(j*2)]])/(m1^2),ncol=1))
+        X <- cbind(X,matrix(-(theta[[i]][[(j*2 - 1)]]*data[,v1[[idx]][j]]^theta[[i]][[(j*2)]] * log(data[,v1[[idx]][j]]))/(m1^2),ncol=1))
       }
       m0 <- m0 + 1/(1+m1)
     }
     
     
   }
+  
+  X <- X[,2:ncol(X)]
   
   S <- gen_cov_mat(m0,
                    Z = Z,
@@ -123,7 +125,7 @@ create_data <- function(formula,
 
 gen_model_string <- function(f1,v1){
   count <- 1
-  str <- "theta[[1]][1]"
+  str <- ""
   #par_vars <- c()
   for(i in 1:length(f1)){
     count <- 1
@@ -132,7 +134,7 @@ gen_model_string <- function(f1,v1){
       #count <- count+1
       
       if(f1[[idx]] %in% c("Exp","Log")){
-        str <- paste0(str," + theta[[",i+1,"]][",count,"]*")
+        str <- paste0(str," + theta[[",i,"]][",count,"]*")
         count <- count +1
       } else {
         str <- paste0(str," + ")
@@ -140,7 +142,7 @@ gen_model_string <- function(f1,v1){
       
       str1 <- ""
       for(j in 1:length(v1[[idx]])){
-        str1 <- paste0(str1,"theta[[",i+1,"]][",count,"]*",v1[[idx]][j])
+        str1 <- paste0(str1,"theta[[",i,"]][",count,"]*",v1[[idx]][j])
         count <- count +1
         #par_vars <- c(par_vars,count)
         if(j != length(v1[[idx]])){
@@ -161,7 +163,7 @@ gen_model_string <- function(f1,v1){
       str1 <- ""
       for(j in 1:length(v1[[idx]])){
         #count <- count +1
-        str1 <- paste0(str1,"theta[[",i+1,"]][",count,"]*",v1[idx][j],"^theta[[",i+1,"]][",count+1,"]")
+        str1 <- paste0(str1,"theta[[",i,"]][",count,"]*",v1[idx][j],"^theta[[",i,"]][",count+1,"]")
         #par_vars <- c(par_vars,count)
         count <- count +1
         if(j != length(v1[[idx]])){
@@ -172,6 +174,7 @@ gen_model_string <- function(f1,v1){
       str <- paste0(str," + 1/(1+",str1,")")
     }
   }
+  str <- substr(str,3,nchar(str))
   return(list(str,count))
 }
 
@@ -261,28 +264,53 @@ gen_cov_mat <- function(Xb,
 # list(list("exponential",pars=c(1,2)),list("indicator",pars=c(1,2)))
 gen_re_mat <- function(df,
                        dims,
-                       funs){
+                       funs,
+                       verbose=TRUE,
+                       parallel=FALSE){
   if(!is(dims,"list"))stop("dims should be list") 
   if(!is(funs,"list"))stop("funs should be list") 
   if(length(dims)!=length(funs))stop("dims and funs should be same length")
+  
+  if(nrow(df)>500&verbose)message(paste0("Creating large covariance matrix ",nrow(df)," x ",nrow(df)," this may take several minutes."))
   
   nD <- length(dims)
   rownames(df) <- NULL
   df_nodup <- df[!duplicated(df),]
   zdim2 <- nrow(df_nodup)
-  Z <- matrix(0,nrow=nrow(df),ncol=zdim2)
-  for(i in 1:zdim2){
-    mat <- unlist(sapply(1:nrow(df),function(j)isTRUE(all.equal(df[j,],df_nodup[i,],check.attributes=FALSE,use.names=FALSE))))
-    Z[mat,i] <- 1
+  
+  
+  if(verbose)cat("Creating Z matrix...\n")
+  if(!parallel){
+    Z <- matrix(0,nrow=nrow(df),ncol=zdim2)
+    for(i in 1:zdim2){
+      mat <- unlist(sapply(1:nrow(df),function(j)isTRUE(all.equal(df[j,],df_nodup[i,],check.attributes=FALSE,use.names=FALSE))))
+      Z[mat,i] <- 1
+      if(verbose)cat("\rIter: ",i," of ",zdim2)
+    }
+  } else {
+    cl <- parallel::makeCluster(parallel::detectCores()-2)
+    parallel::clusterExport(cl,c("df","df_nodup"),envir = environment())
+    Z <- pbapply::pbsapply(1:zdim2,function(i){
+      unlist(sapply(1:nrow(df),function(j)isTRUE(all.equal(df[j,],df_nodup[i,],check.attributes=FALSE,use.names=FALSE))))
+    }, cl = cl)
+    parallel::stopCluster(cl)
+    Z <- Z*1
   }
   
+  
+  if(verbose)cat("\nGenerating distance matrix...\n")
   Dlist <- list()
   for(i in 1:nD){
-    Dlist[[i]] <- as.matrix(dist(df_nodup[,dims[[i]]],upper = TRUE, diag=TRUE))
+    if(!parallel){
+      Dlist[[i]] <- as.matrix(dist(df_nodup[,dims[[i]]],upper = TRUE, diag=TRUE))
+    } else {
+      Dlist[[i]] <- as.matrix(parallelDist::parallelDist(as.matrix(df_nodup[,dims[[i]]]),upper = TRUE, diag=TRUE, threads = parallel::detectCores()-2))
+    }
   }
   
   D <- matrix(1, nrow=zdim2,ncol=zdim2)  
   
+  if(verbose)cat("Applying covariance functions...\n")
   for(i in 1:nD){
     D <- D*do.call(funs[[i]][[1]],list(Dlist[[i]],funs[[i]][[2]]))
   }
