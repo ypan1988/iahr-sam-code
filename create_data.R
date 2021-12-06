@@ -119,7 +119,7 @@ create_data <- function(formula,
                    family=family,
                    var_par = var_par)
   
-  return(list(C,X,S))
+  return(list(C,X,S,theta))
   
 }
 

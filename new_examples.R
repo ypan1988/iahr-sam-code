@@ -31,7 +31,8 @@ Sout <- gen_re_mat(pos,
                    dims = list(c(1,2)),
                    funs = list(
                      list("exponential",c(1,0.2))
-                   ))
+                   ),
+                   parallel=TRUE)
 # optimal design for exponential models
 dat1 <- create_data(~Linear(intc) + Exp(x),
                     family=gaussian(link="identity"),
