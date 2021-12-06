@@ -97,7 +97,6 @@ grad_robust <- function(idx_in,
   if(!all(unlist(lapply(X_list,function(x)is(x,"matrix")))))stop("All X_list must be matrices")
   if((length(C_list)!=length(X_list))|length(X_list)!=length(sig_list))stop("Lists must be same length")
   
-  X_id <- 1:nrow(X_list[[1]])
   A_list <- list()
   u_list <- list()
   for(i in 1:length(sig_list)){
@@ -155,7 +154,7 @@ grad_robust <- function(idx_in,
   }
   
   
-  return(X_id[sort(idx_in)])
+  return(sort(idx_in))
 }
 
 
