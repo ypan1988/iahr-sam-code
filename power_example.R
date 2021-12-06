@@ -5,9 +5,15 @@ power <- function(theta,alpha,pwr,m,C_list,X_list,sig_list){
   d <- sample(c(rep(1,m),rep(0,nrow(X_list[[1]])-m)),nrow(X_list[[1]]))
   idx_in <- which(d==1)
   
+  #OPTION1: RUN grad robust once, output the power for given sample size
+  # grad robsut returns variance v0
+  # calculate power as;
+  pow[i] <- pnorm(sqrt(theta[1]/sqrt(v0[i])) - qnorm(1-alpha/2))
   
+  
+  #OPTION 2: Output the sample size (and design), for a given power
   #do in loop for all theta where C[i]!=0
-  v0[i] <- ((qnorm(power[i]) +qnorm(1-alpha/2))/theta[i])^2 
+  v0 <- (theta/((qnorm(pow) + qnorm(1-alpha/2))^2))^2 
   
   #aim
   all(v1<v0)
