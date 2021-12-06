@@ -3,7 +3,7 @@ require(ggplot2)
 require(Rcpp)
 require(RcppArmadillo)
 
-setwd("C:/Users/pany/Documents/Projects/iahr-sam-code")
+setwd("C:/Users/typan/OneDrive/Documents/Projects/iahr-sam-code")
 sourceCpp("gd_search.cpp")
 source("gd_search.R")
 source("test_examples.R")
@@ -210,3 +210,7 @@ d = grad_robust(idx_in,C_list,X_list,sig_list,wts,tol=1e-20,T)
 d2= grad_robust2(idx_in,C_list,X_list,sig_list,wts,tol=1e-20,T)
 
 sum(d == d2)
+
+system.time(grad_robust(idx_in,C_list,X_list,sig_list,wts,tol=1e-20,F))
+system.time(grad_robust2(idx_in,C_list,X_list,sig_list,wts,tol=1e-20,F))
+

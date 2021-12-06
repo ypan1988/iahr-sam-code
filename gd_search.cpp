@@ -2,6 +2,10 @@
 using namespace Rcpp;
 using namespace arma;
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 // [[Rcpp::depends(RcppArmadillo)]]
 
 // [[Rcpp::export]]
@@ -180,6 +184,7 @@ double ChooseSwapRobust(arma::uword nlist, arma::uvec idx_in, const arma::mat &A
   // find one index from idx_in to remove
   // which results in largest val of remove_one()
   arma::mat val_out_mat(idx_in.n_elem, nlist, arma::fill::zeros);
+#pragma omp parallel for
   for (std::size_t j = 0; j < nlist; ++j) {
     arma::mat A = A_list.rows(j*A_nrows, (j+1)*A_nrows-1);
     arma::vec u = u_list.rows(j*u_nrows, (j+1)*u_nrows-1);
@@ -205,6 +210,7 @@ double ChooseSwapRobust(arma::uword nlist, arma::uvec idx_in, const arma::mat &A
   // find one index from idx_out to add (swap)
   // which results in largest val of add_one()
   arma::mat val_in_mat(idx_out.n_elem,nlist,arma::fill::zeros);
+#pragma omp parallel for
   for (arma::uword j = 0; j < nlist; ++j) {
     arma::mat sig = sig_list.rows(j*u_nrows, (j+1)*u_nrows-1);
     arma::vec u = u_list.subvec(j*u_nrows, (j+1)*u_nrows-1);
