@@ -312,6 +312,12 @@ d <- grad_robust(idx_in,
                  tol=1e-10,
                  trace=T)
 
+d2 <- grad_robust2(idx_in,
+                   C=list(dat1[[1]],dat2[[1]],dat3[[1]]),
+                   X_list=list(dat1[[2]],dat2[[2]],dat3[[2]]),
+                   sig_list = list(dat1[[3]],dat2[[3]],dat3[[3]]),
+                   tol=1e-10,
+                   trace=T)
 
 pos$isin <- 0
 pos[d,'isin'] <- 1
@@ -333,3 +339,60 @@ p_robust2 <- ggplot(data=pos,aes(x=x,y=y,fill=int))+
 ggpubr::ggarrange(p_logb,p_logitb,p_idenb,p_robust2)
 
 
+max_power(theta = rep(c(1,0.5,1,1),3),
+          alpha=0.05, 5,
+          C_list=list(dat1[[1]],dat2[[1]],dat3[[1]]),
+          X_list=list(dat1[[2]],dat2[[2]],dat3[[2]]),
+          sig_list=list(dat1[[3]],dat2[[3]],dat3[[3]]),
+          w=rep(1/3,3), trace = T)
+
+max_power(theta = rep(c(1,0.5,1,1),3),
+          alpha=0.05, 100,
+          C_list=list(dat1[[1]],dat2[[1]],dat3[[1]]),
+          X_list=list(dat1[[2]],dat2[[2]],dat3[[2]]),
+          sig_list=list(dat1[[3]],dat2[[3]],dat3[[3]]),
+          w=rep(1/3,3), trace = T)
+
+max_power(theta = rep(c(1,0.5,1,1),3),
+          alpha=0.05, 300,
+          C_list=list(dat1[[1]],dat2[[1]],dat3[[1]]),
+          X_list=list(dat1[[2]],dat2[[2]],dat3[[2]]),
+          sig_list=list(dat1[[3]],dat2[[3]],dat3[[3]]),
+          w=rep(1/3,3), trace = T)
+
+max_power(theta = rep(c(1,0.5,1,1),3),
+          alpha=0.05, 399,
+          C_list=list(dat1[[1]],dat2[[1]],dat3[[1]]),
+          X_list=list(dat1[[2]],dat2[[2]],dat3[[2]]),
+          sig_list=list(dat1[[3]],dat2[[3]],dat3[[3]]),
+          w=rep(1/3,3), trace = T)
+
+# Will fail
+sample_size2(theta = rep(c(1,0.5,1,1),3),
+             alpha = 0.05,
+             pwr_target = 0.5,
+             C_list=list(dat1[[1]],dat2[[1]],dat3[[1]]),
+             X_list=list(dat1[[2]],dat2[[2]],dat3[[2]]),
+             sig_list=list(dat1[[3]],dat2[[3]],dat3[[3]]), w=rep(1/3,3))
+
+# Will fail
+sample_size2(theta = rep(c(1,0.5,1,1),3),
+             alpha = 0.05,
+             pwr_target = 0.1,
+             C_list=list(dat1[[1]],dat2[[1]],dat3[[1]]),
+             X_list=list(dat1[[2]],dat2[[2]],dat3[[2]]),
+             sig_list=list(dat1[[3]],dat2[[3]],dat3[[3]]), w=rep(1/3,3))
+
+sample_size2(theta = rep(c(1,0.5,1,1),3),
+             alpha = 0.05,
+             pwr_target = 0.25,
+             C_list=list(dat1[[1]],dat2[[1]],dat3[[1]]),
+             X_list=list(dat1[[2]],dat2[[2]],dat3[[2]]),
+             sig_list=list(dat1[[3]],dat2[[3]],dat3[[3]]), w=rep(1/3,3))
+
+sample_size2(theta = rep(c(1,0.5,1,1),3),
+             alpha = 0.05,
+             pwr_target = 0.29,
+             C_list=list(dat1[[1]],dat2[[1]],dat3[[1]]),
+             X_list=list(dat1[[2]],dat2[[2]],dat3[[2]]),
+             sig_list=list(dat1[[3]],dat2[[3]],dat3[[3]]), w=rep(1/3,3))

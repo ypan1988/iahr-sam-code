@@ -214,3 +214,16 @@ sum(d == d2)
 system.time(grad_robust(idx_in,C_list,X_list,sig_list,wts,tol=1e-20,F))
 system.time(grad_robust2(idx_in,C_list,X_list,sig_list,wts,tol=1e-20,F))
 
+theta <- rep(c(1,0.5,3),num_dat)
+alpha <- 0.05
+pwr_target <- 0.8
+m <- 100
+w <- wts
+
+max_power(theta, alpha, m, C_list, X_list, sig_list, w, trace = T)
+sample_size(theta, alpha, pwr_target, m, C_list, X_list, sig_list, w)
+
+max_power(theta, alpha, 3, C_list, X_list, sig_list, w, trace = T)
+max_power(theta, alpha, 400, C_list, X_list, sig_list, w, trace = T)
+
+sample_size2(theta, alpha, pwr_target, C_list, X_list, sig_list, w)

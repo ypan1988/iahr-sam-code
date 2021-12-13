@@ -153,6 +153,13 @@ optim_fun <- function(C,X,S){
   return(val)
 }
 
+optim_fun2 <- function(C,X,S){
+  if(!any(is(C,"matrix"),is(X,"matrix"),is(S,"matrix")))stop("C, X, S must be matrices")
+  M <- t(X) %*% solve(S) %*% X
+  val <- diag(solve(M))[c(C) != 0]
+  return(val)
+}
+
 
 sourceCpp("gd_search.cpp")
 grad_robust2 <- function(idx_in, C_list, X_list, sig_list, w=NULL, tol=1e-9,
@@ -192,4 +199,105 @@ grad_robust2 <- function(idx_in, C_list, X_list, sig_list, w=NULL, tol=1e-9,
     }
   }
   return(idx_in)
+}
+
+# For a given m find the optimal power vector
+max_var <- function(theta, alpha, m, C_list, X_list, sig_list, w, trace = FALSE){
+
+  # randomly generate starting position
+  d <- sample(c(rep(1,m),rep(0,nrow(X_list[[1]])-m)),nrow(X_list[[1]]))
+  idx_in <- which(d==1)
+
+  if (length(idx_in) != nrow(X_list[[1]]))
+  idx_in <- grad_robust2(idx_in, C_list, X_list, sig_list, w, 1e-9, trace)
+
+  v0 <- c()
+  for(i in 1:length(X_list)){
+    v0 <- c(v0,optim_fun2(C_list[[i]],X_list[[i]][idx_in,],sig_list[[i]][idx_in,idx_in]))
+  }
+
+  v0
+}
+
+
+# For a given m find the optimal power vector
+max_power <- function(theta, alpha, m, C_list, X_list, sig_list, w, trace = FALSE){
+
+  # randomly generate starting position
+  d <- sample(c(rep(1,m),rep(0,nrow(X_list[[1]])-m)),nrow(X_list[[1]]))
+  idx_in <- which(d==1)
+  #idx_in <- (1:m)*round(nrow(X_list[[1]])/m,0)
+
+  if (length(idx_in) != nrow(X_list[[1]]))
+  idx_in <- grad_robust2(idx_in, C_list, X_list, sig_list, w, 1e-9, trace)
+
+  v0 <- c()
+  for(i in 1:length(X_list)){
+    v0 <- c(v0,optim_fun2(C_list[[i]],X_list[[i]][idx_in,],sig_list[[i]][idx_in,idx_in]))
+  }
+
+  pow <- pnorm(sqrt(theta[unlist(C_list)!=0]/sqrt(v0)) - qnorm(1-alpha/2))
+
+  pow
+}
+
+sample_size <- function(theta, alpha, pwr_target, m, C_list, X_list, sig_list, w) {
+  iter <- 0
+  pwr_new <- max_power(theta, alpha, m, C_list, X_list, sig_list, w)
+  while (!all(pwr_new - pwr_target > 0) & m < nrow(X_list[[1]])) {
+    iter <- iter + 1
+    m <- m + 1
+    pwr_new <- max_power(theta, alpha, m, C_list, X_list, sig_list, w, trace = FALSE)
+    cat("\nm = ", m)
+    cat("\ntarget: ", pwr_target)
+    cat("  minpwr: ", min(pwr_new))
+  }
+  return(m)
+}
+
+sample_size2 <- function(theta, alpha, pwr_target, C_list, X_list, sig_list, w) {
+
+  cat("\nTarget power = ", pwr_target)
+
+  lo <- max(unlist(lapply(C_list,function(i)length(unlist(i)))))*3
+  hi <- nrow(X_list[[1]])
+  pwr_new_lo <-NULL
+  while(is.null(pwr_new_lo)){
+    cat("\nlo = ", lo)
+    pwr_new_lo <- tryCatch(
+      max_power(theta, alpha, lo, C_list, X_list, sig_list, w, trace = FALSE),
+      error=function(i)NULL)
+    lo <- lo+10
+  }
+  pwr_new_hi <- max_power(theta, alpha, hi, C_list, X_list, sig_list, w, trace = FALSE)
+
+  cat("\nmin power = ", min(pwr_new_lo))
+  cat("\nmax power = ", min(pwr_new_hi))
+
+  if (min(pwr_new_hi) < pwr_target | min(pwr_new_lo) > pwr_target)
+    stop("\ntarget power is not in range of ", min(pwr_new_lo) , " and ", min(pwr_new_hi))
+
+  v_hi    <- max_var(theta, alpha, hi, C_list, X_list, sig_list, w, trace = FALSE)
+  v_target<- (theta[unlist(C_list)!=0]/(qnorm(pwr_target) + qnorm(1-alpha/2))^2)^2
+  guess   <- round(max(v_hi / v_target * hi))
+  pwr_new_guess <- max_power(theta, alpha, guess, C_list, X_list, sig_list, w, trace = FALSE)
+
+  cat("\ninitial guess = ", guess, " with power = ", min(pwr_new_guess))
+
+  if (min(pwr_new_guess) < pwr_target) lo <- guess
+  if (min(pwr_new_guess) > pwr_target) hi <- guess
+
+  while (lo <= hi) {
+    mid <- lo + round((hi - lo) / 2)
+    cat("\nlo = ", lo)
+    cat("  hi = ", hi)
+    cat(" mid = ", mid)
+    pwr_new <- max_power(theta, alpha, mid, C_list, X_list, sig_list, w, trace = FALSE)
+    if (pwr_target < min(pwr_new)) hi = mid - 1
+    if (pwr_target > min(pwr_new)) lo = mid + 1
+    cat("\ntarget: ", pwr_target)
+    cat("  minpwr: ", min(pwr_new))
+  }
+
+  return(mid)
 }
