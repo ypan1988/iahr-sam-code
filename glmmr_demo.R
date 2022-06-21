@@ -20,7 +20,7 @@ des <- Design$new(
   )
 ysim <- des$sim_data()
 
-# fits the models using MCEM 
+# fits the models using MCEM
 fit1 <- des$MCML(y = ysim)
 fit1
 
@@ -74,6 +74,31 @@ perm1 <- des$permutation_test(
   type="unw",
   iter = 1000,
   nsteps = 1000)
+
+##################################################
+##### MCMC
+##################################################
+
+df <- nelder(~(cl(10)*t(5)) > ind(10))
+df$int <- 0
+df[df$cl > 5, 'int'] <- 1
+des <- Design$new(
+  covariance = list(
+    data = df,
+    formula = ~ (1|gr(cl)*ar1(t)),
+    parameters = c(0.25,0.8)),
+  mean.function = list(
+    formula = ~ factor(t) + int - 1,
+    data=df,
+    parameters = c(rep(0,5),0.6),
+    family = binomial())
+)
+ysim <- des$sim_data()
+fit.bayes <- des$MCMC(y=ysim,
+                      priors = list(
+                        prior_b_mean = rep(0,6),
+                        prior_b_sd = c(rep(3,5),1),
+                        prior_g_sd = rep(1,2)))
 
 ##################################################
 ##### Simulation-Based Analysis
