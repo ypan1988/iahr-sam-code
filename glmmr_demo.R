@@ -1,8 +1,8 @@
 library(glmmr)
 
-#####
+##################################################
 ##### Markov Chain Monte Carlo Maximum Likelihood
-#####
+##################################################
 
 df <- nelder(~(cl(10)*t(5)) > ind(10))
 df$int <- 0
@@ -33,10 +33,51 @@ fit2
 fit3 <- des$MCML(y = des$sim_data(), options = list(sim_lik_step=TRUE))
 fit3
 
+##################################################
+##### Permutation Tests
+##################################################
 
-#####
+# df <- nelder(~(cl(6)*t(5)) > ind(5))
+# df$int <- 0
+# df[df$cl > 3, 'int'] <- 1
+
+# treatf <- function(){
+#   tr <- sample(rep(c(0,1),each=3),6,replace = FALSE)
+#   rep(tr,each=25)
+# }
+
+df <- nelder(~(cl(10)*t(5)) > ind(10))
+df$int <- 0
+df[df$cl > 5, 'int'] <- 1
+
+treatf <- function(){
+  tr <- sample(rep(c(0,1),each=5), 10, replace = FALSE)
+  rep(tr,each=25)
+}
+
+mf1 <- MeanFunction$new(
+  formula = ~ factor(t) + int - 1,
+  data=df,
+  parameters = c(rep(0,5),0.6),
+  family =gaussian(),
+  treat_var = "int",
+  random_function = treatf)
+
+#run MCML to get parameter estimate:
+fit1 <- des$MCML(y = ysim,
+                 se.method = "none")
+
+perm1 <- des$permutation_test(
+  y=ysim,
+  permutation.par=6,
+  start = fit1$coefficients$est[6],
+  type="unw",
+  iter = 1000,
+  nsteps = 1000)
+
+##################################################
 ##### Simulation-Based Analysis
-#####
+##################################################
 
 df <- nelder(~(cl(10)*t(5)) > ind(10))
 df$int <- 0
