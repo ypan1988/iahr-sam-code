@@ -184,7 +184,10 @@ test1 <- des$analysis_bayesian(iter = 100,
                                warmup_iter = 500,
                                sampling_iter =500,
                                parallel = FALSE)
+test1
 
+#put this figure in the paper
+plot(test1)
 
 # ADD C-OPTIMAL EXPERIMENTAL DESIGN EXAMPLES
 # i suggest using examples from the other paper
